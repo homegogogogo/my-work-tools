@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>업무·생활 도구 모음</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root {
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --border: #e2e7ec;
+    --text: #1f2a37;
+    --muted: #6b7785;
+    --accent: #2f5d7c;
+    --accent-soft: #e8f0f5;
+    --fun: #3f7d6e;      --fun-soft: #e6f2ee;
+    --news: #2f5d7c;     --news-soft: #e8f0f5;
+    --work: #6a5a8c;     --work-soft: #efecf5;
+    --shadow: 0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06);
+    --shadow-hover: 0 6px 18px rgba(16,24,40,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161b22;
+      --surface: #1e252e;
+      --border: #2c3540;
+      --text: #e3e8ee;
+      --muted: #9aa6b2;
+      --accent: #8ab4d0;
+      --accent-soft: #24313d;
+      --fun: #7fc0ad;   --fun-soft: #213330;
+      --news: #8ab4d0;  --news-soft: #22303c;
+      --work: #b3a5d6;  --work-soft: #2b2838;
+      --shadow: none;
+      --shadow-hover: 0 6px 18px rgba(0,0,0,.35);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 56px 24px 40px; }
+
+  header { margin-bottom: 44px; }
+  header .eyebrow {
+    font-size: 13px; font-weight: 600; letter-spacing: .08em;
+    color: var(--accent); text-transform: uppercase;
+  }
+  header h1 { font-size: 30px; font-weight: 700; letter-spacing: -.02em; margin: 6px 0 8px; }
+  header p { color: var(--muted); font-size: 15px; }
+
+  section { margin-bottom: 36px; }
+  .sec-head {
+    display: flex; align-items: center; gap: 10px;
+    padding-bottom: 12px; margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sec-head .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+  .sec-head h2 { font-size: 17px; font-weight: 700; }
+  .sec-head span { font-size: 13px; color: var(--muted); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    text-decoration: none; color: inherit;
+    box-shadow: var(--shadow);
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .card:hover, .card:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--c);
+    outline: none;
+  }
+  .icon {
+    flex: none; width: 44px; height: 44px; border-radius: 10px;
+    display: grid; place-items: center;
+    background: var(--soft); color: var(--c);
+  }
+  .icon svg { width: 22px; height: 22px; }
+  .info { flex: 1; min-width: 0; }
+  .info h3 { font-size: 15.5px; font-weight: 600; }
+  .info p { font-size: 13px; color: var(--muted); }
+  .arrow { flex: none; color: var(--muted); transition: transform .15s ease, color .15s ease; }
+  .card:hover .arrow { transform: translateX(3px); color: var(--c); }
+  .badge {
+    display: inline-block; margin-left: 6px; padding: 1px 6px;
+    font-size: 11px; font-weight: 500; border-radius: 4px;
+    background: var(--soft); color: var(--c); vertical-align: 1px;
+  }
+
+  .fun  { --c: var(--fun);  --soft: var(--fun-soft); }
+  .news { --c: var(--news); --soft: var(--news-soft); }
+  .work { --c: var(--work); --soft: var(--work-soft); }
+
+  footer {
+    margin-top: 20px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px; color: var(--muted); text-align: center;
+  }
+  @media (max-width: 560px) {
+    .wrap { padding-top: 36px; }
+    header h1 { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Toolbox</div>
+    <h1>업무·생활 도구 모음</h1>
+    <p>필요한 도구를 선택하면 바로 이동합니다.</p>
+  </header>
+
+  <!-- 재미 -->
+  <section class="fun">
+    <div class="sec-head"><i class="dot"></i><h2>재미</h2><span>3</span></div>
+    <div class="grid">
+      <a class="card" href="동물%20사다리%20타기.html">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 3v18M18 3v18M6 7h12M6 12h12M6 17h12"/></svg></div>
+        <div class="info"><h3>사다리타기</h3><p>동물 사다리로 공정하게 정하기</p></div>
+        <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+      </a>
+      <a class="card" href="룰렛%20추첨기.html">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6.4 6.4M12 12L3.5 9.2"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></div>
+        <div class="info"><h3>룰렛추첨기</h3><p>돌려서 무작위로 추첨하기</p></div>
+        <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+      </a>
+      <a class="card" href="https://script.google.com/macros/s/AKfycbzYroKHTWooUW0wNeZ87VpsxkTAnv4p3eGhEW02t8mmQrV1_GesBgctNpd9dI4bgbm3zw/exec" target="_blank" rel="noopener">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><path d="M8 2v1M8 13v1M2 8h1M13 8h1M3.8 3.8l.7.7M11.5 11.5l.7.7M3.8 12.2l.7-.7"/><path d="M10 20h8a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.3-.9A3.5 3.5 0 0 0 10 20z"/></svg></div>
+        <div class="info"><h3>날씨기반 점심고르기<span class="badge">새 창</span></h3><p>오늘 날씨에 어울리는 메뉴 추천</p></div>
+        <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- 뉴스 -->
+  <section class="news">
+    <div class="sec-head"><i class="dot"></i><h2>뉴스</h2><span>1</span></div>
+    <div class="grid">
+      <a class="card" href="https://script.google.com/macros/s/AKfycbxuNUMtqf0bK-yXD-kqs6008WTsN46a0bDojJuwhVua-JmNKVGEiTsRWuSryS5Vq6aOQw/exec" target="_blank" rel="noopener">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6M7 17h4"/><path d="M16 13l-1.5 3h3L16 19"/></svg></div>
+        <div class="info"><h3>한전뉴스대시보드<span class="badge">새 창</span></h3><p>한전 관련 최신 뉴스 한눈에 보기</p></div>
+        <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- 업무 -->
+  <section class="work">
+    <div class="sec-head"><i class="dot"></i><h2>업무</h2><span>1</span></div>
+    <div class="grid">
+      <a class="card" href="PDF%20병합기.html">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h6l4 4v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v4h4"/><path d="M3 8v11a2 2 0 0 0 2 2h9"/><path d="M12 10v6M9 13h6"/></svg></div>
+        <div class="info"><h3>PDF병합</h3><p>여러 PDF 파일을 하나로 합치기</p></div>
+        <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <footer>© <span id="y"></span> Toolbox</footer>
+</div>
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

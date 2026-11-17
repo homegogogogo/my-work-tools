@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>동물 사다리 타기</title>
+<style>
+/* =========================================================
+   기본 색상 · 글꼴
+   ========================================================= */
+:root{
+  --ink:#2d2a32;
+  --muted:#7a7385;
+  --line:#efe6f7;
+  --primary:#ff5a5f;
+  --primary2:#ff9f1c;
+  --radius:22px;
+  font-size:17px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+  color:var(--ink);min-height:100vh;
+  background:
+    radial-gradient(circle at 10% 8%, #ffe3ec 0, transparent 38%),
+    radial-gradient(circle at 90% 15%, #dcf4ff 0, transparent 40%),
+    radial-gradient(circle at 50% 105%, #fff0c2 0, transparent 50%),
+    #fffaf4;
+}
+button{font-family:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.45}
+.hidden{display:none !important}
+.wrap{max-width:1200px;margin:0 auto;padding:1rem 1.2rem 2rem}
+
+/* ---------- 제목 ---------- */
+h1{margin:.3rem 0 1rem;font-size:2rem;font-weight:900;letter-spacing:-.02em;text-align:center}
+h1 .grad{background:linear-gradient(90deg,#ff5a5f,#ff9f1c,#8338ec);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ---------- 조작 막대 ---------- */
+.controls{
+  display:flex;align-items:center;justify-content:center;gap:.8rem;flex-wrap:wrap;
+  background:#fff;border:2px solid var(--line);border-radius:999px;padding:.6rem 1rem;
+  box-shadow:0 8px 24px rgba(120,80,160,.08);margin-bottom:1rem;
+}
+.count{display:flex;align-items:center;gap:.4rem;font-weight:800;font-size:1.1rem}
+.count input{width:3.6rem;text-align:center;font:inherit;font-size:1.5rem;font-weight:900;border:2px solid var(--line);border-radius:12px;padding:.2rem;color:var(--ink)}
+.step{width:2.3rem;height:2.3rem;border-radius:50%;border:none;background:#efe6fb;color:#8338ec;font-size:1.3rem;font-weight:900}
+.soft{border:none;background:#fff1e8;color:#c2410c;font-weight:800;font-size:1rem;padding:.65rem 1.1rem;border-radius:14px;transition:transform .15s}
+.soft:hover:not(:disabled){transform:translateY(-2px)}
+.big-btn{
+  border:none;color:#fff;font-weight:900;font-size:1.35rem;padding:.75rem 1.8rem;border-radius:18px;
+  background:linear-gradient(135deg,var(--primary),var(--primary2));
+  box-shadow:0 5px 0 #d9363b, 0 10px 20px rgba(255,90,95,.3);transition:transform .12s, box-shadow .12s;
+}
+.big-btn:hover:not(:disabled){transform:translateY(-2px)}
+.big-btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 #d9363b}
+
+/* ---------- 사다리 판 ---------- */
+.board{background:#fff;border:2px solid var(--line);border-radius:var(--radius);padding:1rem;box-shadow:0 10px 30px rgba(120,80,160,.10);overflow-x:auto}
+.board-inner{min-width:calc(var(--n) * 88px)}
+.cols{display:grid;grid-template-columns:repeat(var(--n), minmax(0,1fr));gap:.5rem}
+
+/* 위쪽: 동물 + 이름 */
+.pcard{display:flex;flex-direction:column;align-items:center;gap:.35rem}
+.face{
+  width:4.2rem;height:4.2rem;border-radius:50%;border:4px solid var(--c);background:#fff;
+  font-size:2.4rem;line-height:1;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 0 var(--c);transition:transform .15s;position:relative;
+}
+.face:hover:not(:disabled){transform:translateY(-3px) rotate(-6deg)}
+.face::after{content:"✏️";position:absolute;right:-.3rem;bottom:-.2rem;font-size:.8rem;background:#fff;border-radius:50%;padding:.1rem}
+.face:disabled{opacity:1;cursor:default}
+.face:disabled::after{display:none}
+.pname,.prize input{
+  width:100%;text-align:center;font:inherit;font-weight:800;font-size:1rem;color:var(--ink);
+  border:2px solid var(--line);border-radius:10px;padding:.35rem .2rem;background:#fffdfb;outline:none;
+}
+.pname:focus,.prize input:focus{border-color:var(--primary)}
+
+/* 가운데: 사다리 캔버스 */
+.ladder-wrap{height:clamp(260px, 46vh, 560px);margin:.4rem 0}
+.ladder-wrap canvas{width:100%;height:100%;display:block}
+
+/* 아래쪽: 당첨 내역 */
+.prize{position:relative;display:flex;flex-direction:column;align-items:center;gap:.3rem}
+.prize input{background:#fffaf0;border-color:#ffe3a3}
+.arrived{min-height:2.1rem;font-size:1.7rem;line-height:1}
+.arrived span{display:inline-block;animation:pop .45s cubic-bezier(.2,1.6,.4,1) both}
+.prize-label{font-size:.8rem;color:var(--muted);font-weight:700}
+
+.hint{text-align:center;color:var(--muted);margin:.8rem 0 0;font-size:.95rem}
+
+/* ---------- 결과 ---------- */
+.results{margin-top:1.2rem;background:#fff;border:2px solid #ffe08a;border-radius:var(--radius);padding:1.2rem;box-shadow:0 10px 30px rgba(255,190,11,.15)}
+.results h2{margin:0 0 .8rem;text-align:center;font-size:1.5rem}
+.result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:.7rem}
+.rcard{
+  display:flex;align-items:center;gap:.7rem;padding:.7rem 1rem;border-radius:16px;
+  background:#fff;border:3px solid var(--c);animation:pop .45s cubic-bezier(.2,1.4,.4,1) both;
+}
+.rcard .em{font-size:2.2rem}
+.rcard .nm{font-weight:900;font-size:1.15rem;white-space:nowrap}
+.rcard .arrow{color:var(--muted);font-weight:900}
+.rcard .pz{margin-left:auto;font-weight:900;font-size:1.2rem;color:var(--c);text-align:right;word-break:keep-all}
+.rcard.lose{opacity:.7}
+.rcard.lose .pz{color:var(--muted)}
+@keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+
+/* ---------- 동물 고르기 창 ---------- */
+.picker{
+  position:absolute;z-index:50;background:#fff;border:2px solid var(--line);border-radius:18px;padding:.7rem;
+  box-shadow:0 16px 40px rgba(60,30,90,.2);width:17rem;animation:pop .2s ease-out both;
+}
+.picker p{margin:0 0 .5rem;font-weight:800;font-size:.95rem;text-align:center}
+.picker .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.25rem}
+.picker button{font-size:1.8rem;border:none;background:#faf6ff;border-radius:12px;padding:.25rem 0;transition:transform .1s}
+.picker button:hover{transform:scale(1.2)}
+.picker button.taken{opacity:.35}
+.picker button.current{outline:3px solid var(--primary);background:#fff}
+.picker small{display:block;text-align:center;color:var(--muted);margin-top:.4rem;font-size:.78rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🪜 <span class="grad">동물 사다리 타기</span></h1>
+
+  <!-- ================= 조작 막대 ================= -->
+  <div class="controls">
+    <div class="count">
+      인원
+      <button class="step" data-step="-1" aria-label="인원 줄이기">−</button>
+      <input type="number" id="countInput" min="2" max="10" value="5">
+      <button class="step" data-step="1" aria-label="인원 늘리기">＋</button>
+      명
+    </div>
+    <button id="btnNew" class="soft">🎲 사다리 새로 만들기</button>
+    <button id="btnStart" class="big-btn">▶ 시작!</button>
+    <button id="btnSkip" class="soft hidden">⏩ 결과 바로 보기</button>
+  </div>
+
+  <!-- ================= 사다리 판 ================= -->
+  <div class="board">
+    <div class="board-inner" id="boardInner">
+      <div class="cols" id="playerRow"></div>
+      <div class="ladder-wrap" id="ladderWrap"><canvas id="ladder"></canvas></div>
+      <div class="cols" id="prizeRow"></div>
+    </div>
+  </div>
+  <p class="hint" id="hint">동물 얼굴을 눌러 캐릭터를 바꾸고, 이름과 당첨 내역을 적은 뒤 <b>[시작!]</b>을 누르세요.</p>
+
+  <!-- ================= 결과 ================= -->
+  <section class="results hidden" id="results">
+    <h2>🎉 사다리 결과</h2>
+    <div class="result-grid" id="resultGrid"></div>
+  </section>
+</div>
+
+<!-- 동물 고르기 창 -->
+<div class="picker hidden" id="picker">
+  <p>캐릭터를 골라 주세요</p>
+  <div class="grid" id="pickerGrid"></div>
+  <small>다른 사람이 고른 동물을 누르면 서로 바뀌어요</small>
+</div>
+
+<script>
+/* =========================================================
+   기본 데이터
+   ========================================================= */
+const ANIMALS = ['🐶','🐱','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐷','🐸','🐵','🐹','🐮','🐔','🐧','🦄','🐙'];
+const COLORS  = ['#ff5a5f','#3a86ff','#22b8a8','#ff9f1c','#8338ec','#ef476f','#0ea5e9','#65a30d','#e83e8c','#d97706'];
+const DEFAULT_NAMES  = ['민준','서연','지호','수아','도윤','하은','예준','지우','시우','서윤'];
+const DEFAULT_PRIZES = ['☕ 커피 쏘기','꽝','🎁 선물 당첨','꽝','🧹 청소 당번','꽝','🍰 간식 당첨','꽝','🍀 행운권','꽝'];
+const MIN_N = 2, MAX_N = 10;
+const LEVELS = 12;  // 가로줄이 놓일 수 있는 층 수
+
+const $ = s => document.querySelector(s);
+
+/* 상태 */
+let n = 5;
+let players = [];   // { name, animal }
+let prizes = [];    // 당첨 내역 문자열
+let grid = [];      // grid[층][칸 사이] = 가로줄의 세로 위치(0~1) 또는 null
+let phase = 'hidden';   // hidden(가림) → revealing(공개 중) → running(타는 중) → done(끝)
+let curtain = 1;        // 가림막 남은 비율 (1 = 전부 가림)
+let runs = [];          // 사람마다 { pts, end, progress, active }
+let skip = false;
+
+/* 공정한 난수 */
+function rand(){
+  if (window.crypto && crypto.getRandomValues){ const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; }
+  return Math.random();
+}
+const easeInOutCubic = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+const escapeHtml = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const color = i => COLORS[i % COLORS.length];
+
+/* =========================================================
+   인원 맞추기 — 기존 입력은 그대로 두고 늘리거나 줄임
+   ========================================================= */
+function setCount(v){
+  v = Math.max(MIN_N, Math.min(MAX_N, parseInt(v, 10) || MIN_N));
+  n = v;
+  $('#countInput').value = n;
+  while (players.length < n){
+    const used = players.map(p => p.animal);
+    const animal = ANIMALS.find(a => !used.includes(a)) || ANIMALS[players.length % ANIMALS.length];
+    players.push({ name: DEFAULT_NAMES[players.length] || `참가자${players.length + 1}`, animal });
+  }
+  players.length = n;
+  while (prizes.length < n) prizes.push(DEFAULT_PRIZES[prizes.length] || '꽝');
+  prizes.length = n;
+  document.documentElement.style.setProperty('--n', n);
+  renderRows();
+  newLadder();
+}
+
+/* 위(동물·이름)와 아래(당첨 내역) 칸 그리기 */
+function renderRows(){
+  $('#playerRow').innerHTML = players.map((p, i) => `
+    <div class="pcard" style="--c:${color(i)}">
+      <button class="face" data-i="${i}" title="캐릭터 바꾸기">${p.animal}</button>
+      <input class="pname" data-i="${i}" value="${escapeHtml(p.name)}" maxlength="10" placeholder="이름">
+    </div>`).join('');
+  $('#prizeRow').innerHTML = prizes.map((z, i) => `
+    <div class="prize">
+      <div class="arrived" id="arrived${i}"></div>
+      <input data-i="${i}" value="${escapeHtml(z)}" maxlength="14" placeholder="당첨 내역">
+    </div>`).join('');
+
+  document.querySelectorAll('.pname').forEach(el => el.addEventListener('input', () => {
+    players[el.dataset.i].name = el.value; if (phase === 'done') showResults();
+  }));
+  document.querySelectorAll('.prize input').forEach(el => el.addEventListener('input', () => {
+    prizes[el.dataset.i] = el.value; if (phase === 'done') showResults();
+  }));
+  document.querySelectorAll('.face').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); openPicker(+el.dataset.i, el); }));
+  lockInputs(phase === 'revealing' || phase === 'running');
+}
+
+/* =========================================================
+   동물 고르기
+   ========================================================= */
+let pickFor = -1;
+function openPicker(i, anchor){
+  if (phase === 'running' || phase === 'revealing') return;
+  pickFor = i;
+  const used = players.map(p => p.animal);
+  $('#pickerGrid').innerHTML = ANIMALS.map(a =>
+    `<button data-a="${a}" class="${a === players[i].animal ? 'current' : used.includes(a) ? 'taken' : ''}">${a}</button>`).join('');
+  const pk = $('#picker');
+  pk.classList.remove('hidden');
+  const r = anchor.getBoundingClientRect();
+  const w = pk.offsetWidth;
+  const left = Math.min(window.scrollX + document.documentElement.clientWidth - w - 8, Math.max(8, window.scrollX + r.left + r.width / 2 - w / 2));
+  pk.style.left = left + 'px';
+  pk.style.top = (window.scrollY + r.bottom + 8) + 'px';
+}
+$('#pickerGrid').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const a = b.dataset.a;
+  const other = players.findIndex((p, j) => j !== pickFor && p.animal === a);
+  if (other >= 0) players[other].animal = players[pickFor].animal; // 이미 쓰는 동물이면 서로 바꾸기
+  players[pickFor].animal = a;
+  $('#picker').classList.add('hidden');
+  renderRows(); restoreArrivals(); draw();
+  if (phase === 'done') showResults();
+});
+document.addEventListener('click', e => { if (!e.target.closest('#picker')) $('#picker').classList.add('hidden'); });
+
+/* =========================================================
+   사다리 만들기
+   ========================================================= */
+function newLadder(){
+  // 층마다 칸 사이에 무작위로 가로줄 놓기 (바로 옆 칸과 같은 층에 겹치지 않게)
+  grid = Array.from({ length: LEVELS }, () => Array(n - 1).fill(null));
+  const levelY = l => 0.07 + (l + 0.5) / LEVELS * 0.86 + (rand() - 0.5) * 0.55 / LEVELS * 0.86;
+  const free = (l, g) => !grid[l][g] && !(g > 0 && grid[l][g - 1]) && !(g < n - 2 && grid[l][g + 1]);
+  for (let l = 0; l < LEVELS; l++){
+    for (let g = 0; g < n - 1; g++){
+      if (free(l, g) && rand() < 0.45) grid[l][g] = levelY(l);
+    }
+  }
+  // 칸 사이마다 가로줄이 최소 2개는 있도록 보충
+  for (let g = 0; g < n - 1; g++){
+    let count = grid.filter(row => row[g]).length;
+    const order = [...Array(LEVELS).keys()].sort(() => rand() - 0.5);
+    for (const l of order){
+      if (count >= 2) break;
+      if (free(l, g)){ grid[l][g] = levelY(l); count++; }
+    }
+  }
+  // 상태 초기화 (다시 가림)
+  phase = 'hidden'; curtain = 1; skip = false;
+  runs = players.map((_, i) => ({ ...tracePath(i), progress: 0, active: false }));
+  for (let i = 0; i < n; i++){ const el = $('#arrived' + i); if (el) el.innerHTML = ''; }
+  $('#results').classList.add('hidden');
+  $('#btnStart').textContent = '▶ 시작!';
+  $('#btnStart').disabled = false;
+  $('#btnSkip').classList.add('hidden');
+  $('#hint').innerHTML = '동물 얼굴을 눌러 캐릭터를 바꾸고, 이름과 당첨 내역을 적은 뒤 <b>[시작!]</b>을 누르세요.';
+  lockInputs(false);
+  draw();
+}
+
+// i번째 사람이 내려가는 길: 가로줄을 만나면 옆으로 건너감
+function tracePath(start){
+  let c = start;
+  const pts = [{ c, y: 0 }];
+  for (let l = 0; l < LEVELS; l++){
+    const left = c > 0 && grid[l][c - 1];
+    const right = c < n - 1 && grid[l][c];
+    if (left || right){
+      const y = left || right;
+      pts.push({ c, y });
+      c += left ? -1 : 1;
+      pts.push({ c, y });
+    }
+  }
+  pts.push({ c, y: 1 });
+  return { pts, end: c };
+}
+
+/* =========================================================
+   캔버스 그리기
+   ========================================================= */
+const canvas = $('#ladder'), ctx = canvas.getContext('2d');
+let W = 600, H = 400;
+function resize(){
+  const r = $('#ladderWrap').getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  W = r.width; H = r.height;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  draw();
+}
+new ResizeObserver(resize).observe($('#ladderWrap'));
+
+const px = p => ({ x: (p.c + 0.5) * W / n, y: p.y * H });
+
+// 길 위에서 진행 비율 t(0~1)만큼 간 지점까지의 꼭짓점들
+function partialPath(pts, t){
+  const P = pts.map(px);
+  let total = 0; const seg = [];
+  for (let k = 1; k < P.length; k++){ const d = Math.hypot(P[k].x - P[k-1].x, P[k].y - P[k-1].y); seg.push(d); total += d; }
+  let remain = total * t; const out = [P[0]];
+  for (let k = 1; k < P.length; k++){
+    if (remain >= seg[k-1]){ out.push(P[k]); remain -= seg[k-1]; }
+    else {
+      const f = seg[k-1] ? remain / seg[k-1] : 0;
+      out.push({ x: P[k-1].x + (P[k].x - P[k-1].x) * f, y: P[k-1].y + (P[k].y - P[k-1].y) * f });
+      break;
+    }
+  }
+  return { out, total };
+}
+
+function draw(){
+  ctx.clearRect(0, 0, W, H);
+  const colW = W / n;
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+  // 세로줄
+  ctx.strokeStyle = '#e4d8f2'; ctx.lineWidth = 7;
+  for (let c = 0; c < n; c++){
+    const x = (c + 0.5) * colW;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  // 가로줄
+  for (let l = 0; l < LEVELS; l++) for (let g = 0; g < n - 1; g++){
+    const y = grid[l][g]; if (!y) continue;
+    ctx.beginPath(); ctx.moveTo((g + 0.5) * colW, y * H); ctx.lineTo((g + 1.5) * colW, y * H); ctx.stroke();
+  }
+
+  // 지나간 길 (사람마다 색)
+  runs.forEach((r, i) => {
+    if (r.progress <= 0) return;
+    const { out } = partialPath(r.pts, r.progress);
+    ctx.strokeStyle = color(i); ctx.globalAlpha = 0.85; ctx.lineWidth = 8;
+    ctx.beginPath(); out.forEach((p, k) => k ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
+    ctx.globalAlpha = 1;
+  });
+
+  // 가림막: 시작 전에는 사다리 내용을 감춤
+  if (curtain > 0){
+    const top = H * 0.03, full = H * 0.94, h = full * curtain;
+    ctx.save();
+    ctx.beginPath(); roundRect(ctx, 4, top, W - 8, h, 18); ctx.clip();
+    const grd = ctx.createLinearGradient(0, top, W, top + full);
+    grd.addColorStop(0, '#ffd6e0'); grd.addColorStop(.5, '#fff1c1'); grd.addColorStop(1, '#d6ecff');
+    ctx.fillStyle = grd; ctx.fillRect(0, top, W, h);
+    // 사선 줄무늬
+    ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 14;
+    for (let x = -H; x < W + H; x += 44){ ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x + full, top + full); ctx.stroke(); }
+    // 물음표들
+    ctx.fillStyle = 'rgba(131,56,236,.18)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `900 ${Math.min(colW * 0.6, 60)}px Pretendard, "Malgun Gothic", sans-serif`;
+    for (let c = 0; c < n - 1; c++) ctx.fillText('?', (c + 1) * colW, top + full * (c % 2 ? 0.35 : 0.62) - (full - h));
+    // 안내 문구
+    if (curtain > 0.6){
+      const msg = '🙈 시작 버튼을 누르면 사다리가 공개돼요!';
+      ctx.font = `800 ${Math.max(14, Math.min(W / 26, 24))}px Pretendard, "Malgun Gothic", sans-serif`;
+      const tw = ctx.measureText(msg).width + 40, cy = top + full / 2 - (full - h);
+      ctx.fillStyle = 'rgba(255,255,255,.92)';
+      ctx.beginPath(); roundRect(ctx, W / 2 - tw / 2, cy - 26, tw, 52, 26); ctx.fill();
+      ctx.fillStyle = '#5b3a8a'; ctx.fillText(msg, W / 2, cy + 1);
+    }
+    ctx.restore();
+  }
+
+  // 달리는 동물 (지금 타는 사람 + 도착한 사람은 아래 칸에 표시되므로 생략)
+  runs.forEach((r, i) => {
+    if (!r.active) return;
+    const { out } = partialPath(r.pts, r.progress);
+    const p = out[out.length - 1];
+    const s = Math.max(22, Math.min(colW * 0.42, 44));
+    ctx.beginPath(); ctx.arc(p.x, p.y, s * 0.68, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.lineWidth = 4; ctx.strokeStyle = color(i); ctx.stroke();
+    ctx.font = `${s}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(players[i].animal, p.x, p.y + s * 0.05);
+  });
+}
+function roundRect(c, x, y, w, h, r){
+  r = Math.min(r, w / 2, h / 2);
+  c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+}
+
+/* =========================================================
+   애니메이션
+   ========================================================= */
+// dur 동안 매 프레임 fn(진행 0~1)을 부르고 다시 그림. '바로 보기'를 누르면 즉시 끝냄
+function animate(dur, fn){
+  return new Promise(resolve => {
+    const t0 = performance.now();
+    function frame(now){
+      const t = skip ? 1 : Math.min(1, (now - t0) / dur);
+      fn(t); draw();
+      t < 1 ? requestAnimationFrame(frame) : resolve();
+    }
+    requestAnimationFrame(frame);
+  });
+}
+const sleep = ms => new Promise(r => setTimeout(r, skip ? 0 : ms));
+
+function lockInputs(lock){
+  document.querySelectorAll('.face, .step, #countInput, #btnNew').forEach(el => el.disabled = lock);
+}
+
+async function start(){
+  if (phase === 'done'){ newLadder(); return; }   // '다시 하기'
+  if (phase !== 'hidden') return;
+  $('#picker').classList.add('hidden');
+  runs = players.map((_, i) => ({ ...tracePath(i), progress: 0, active: false }));
+  skip = false;
+  phase = 'revealing';
+  lockInputs(true);
+  $('#btnStart').disabled = true;
+  $('#btnSkip').classList.remove('hidden');
+  $('#hint').textContent = '두근두근… 한 명씩 사다리를 타고 내려가요!';
+
+  // 1) 가림막 걷기
+  await animate(800, t => { curtain = 1 - easeInOutCubic(t); });
+
+  // 2) 한 명씩 차례로 내려가기 — 출발은 천천히, 중간은 빠르게, 도착은 부드럽게 감속
+  phase = 'running';
+  for (let i = 0; i < n; i++){
+    const r = runs[i];
+    r.active = true;
+    const { total } = partialPath(r.pts, 1);
+    const dur = Math.max(1400, Math.min(3200, total / H * 1100));
+    await animate(dur, t => { r.progress = easeInOutCubic(t); });
+    r.active = false;
+    markArrival(i);
+    await sleep(250);
+  }
+  finish();
+}
+
+// 도착한 동물을 아래 당첨 칸 위에 표시
+function markArrival(i){
+  const el = $('#arrived' + runs[i].end);
+  if (el) el.innerHTML = `<span title="${escapeHtml(players[i].name)}">${players[i].animal}</span>`;
+}
+function restoreArrivals(){
+  runs.forEach((r, i) => { if (r.progress >= 1) markArrival(i); });
+}
+
+function finish(){
+  phase = 'done'; skip = false;
+  runs.forEach(r => { r.progress = 1; r.active = false; });
+  draw();
+  restoreArrivals();
+  showResults();
+  lockInputs(false);
+  $('#btnSkip').classList.add('hidden');
+  $('#btnStart').disabled = false;
+  $('#btnStart').textContent = '🔁 다시 하기';
+  $('#hint').innerHTML = '결과가 나왔어요! <b>[다시 하기]</b>를 누르면 새 사다리가 가려진 채로 준비돼요.';
+}
+
+function showResults(){
+  const isLose = s => !s.trim() || s.trim() === '꽝';
+  $('#resultGrid').innerHTML = players.map((p, i) => {
+    const prize = prizes[runs[i].end] || '';
+    return `<div class="rcard ${isLose(prize) ? 'lose' : ''}" style="--c:${color(i)};animation-delay:${i * 80}ms">
+      <span class="em">${p.animal}</span>
+      <span class="nm">${escapeHtml(p.name || '이름 없음')}</span>
+      <span class="arrow">→</span>
+      <span class="pz">${escapeHtml(prize || '(빈칸)')}</span>
+    </div>`;
+  }).join('');
+  const sec = $('#results');
+  if (sec.classList.contains('hidden')){
+    sec.classList.remove('hidden');
+    sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+/* =========================================================
+   버튼 연결
+   ========================================================= */
+$('#btnStart').addEventListener('click', start);
+$('#btnSkip').addEventListener('click', () => { skip = true; });
+$('#btnNew').addEventListener('click', newLadder);
+document.querySelectorAll('.step').forEach(b => b.addEventListener('click', () => setCount(n + Number(b.dataset.step))));
+$('#countInput').addEventListener('change', e => setCount(e.target.value));
+
+/* 시작: 5명 */
+setCount(5);
+resize();
+</script>
+</body>
+</html>
